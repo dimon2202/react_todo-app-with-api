@@ -33,7 +33,7 @@ export const TodoList: React.FC<Props> = ({
           todo={tempTodo}
           onDelete={onDelete}
           onUpdate={onUpdate}
-          loadingTodoId={loadingTodoIds.find(id => id === tempTodo.id)}
+          loadingTodoId={tempTodo.id}
         />
       )}
     </section>
