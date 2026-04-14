@@ -8,7 +8,7 @@ type Props = {
   todo: Todo;
   onDelete?: (todoId: number) => void;
   onUpdate?: (todo: Todo) => void;
-  loadingTodoId: number | null;
+  loadingTodoId?: number;
 };
 
 export const TodoItem: React.FC<Props> = ({

@@ -36,7 +36,7 @@ function getPrepearedTodos(
 
 export const App: React.FC = () => {
   const [loadingTodos, setLoadingTodos] = useState(true);
-  const [loadingTodoId, setLoadingTodoId] = useState<number | null>(null);
+  const [loadingTodoIds, setLoadingTodoIds] = useState<number[]>([]);
   const [todos, setTodos] = useState<Todo[]>([]);
   const [status, setStatus] = useState<Status>(Status.All);
   const [errorMessage, setErrorMessage] = useState(ErrorMessage.Default);
@@ -73,7 +73,7 @@ export const App: React.FC = () => {
   };
 
   const updateTodo = useCallback((todoToUpdate: Todo) => {
-    setLoadingTodoId(todoToUpdate.id);
+    setLoadingTodoIds(currentId => [...currentId, todoToUpdate.id]);
 
     return todoServise
       .updateTodo(todoToUpdate)
@@ -88,21 +88,23 @@ export const App: React.FC = () => {
         setErrorMessage(ErrorMessage.Unable_to_update_a_todo);
         throw error;
       })
-      .finally(() => setLoadingTodoId(null));
+      .finally(() => setLoadingTodoIds([]));
   }, []);
 
   const toggleAll = () => {
     if (activeTodos.length > 0) {
-      activeTodos.map(todo => updateTodo({ ...todo, completed: true }));
+      Promise.all(
+        activeTodos.map(todo => updateTodo({ ...todo, completed: true })),
+      );
     } else {
-      todos.map(todo => updateTodo({ ...todo, completed: false }));
+      Promise.all(todos.map(todo => updateTodo({ ...todo, completed: false })));
     }
   };
 
   const deleteTodo = (todoId: number) => {
-    setLoadingTodoId(todoId);
+    setLoadingTodoIds(currentId => [...currentId, todoId]);
 
-    todoServise
+    return todoServise
       .deleteTodo(todoId)
       .then(() =>
         setTodos(currentTodos =>
@@ -113,11 +115,11 @@ export const App: React.FC = () => {
         setErrorMessage(ErrorMessage.Unable_to_delete_a_todo);
         throw error;
       })
-      .finally(() => setLoadingTodoId(null));
+      .finally(() => setLoadingTodoIds([]));
   };
 
   const deleteCompletedTodos = () => {
-    complitedTodos.map(todo => deleteTodo(todo.id));
+    Promise.all(complitedTodos.map(todo => deleteTodo(todo.id)));
   };
 
   return (
@@ -144,7 +146,7 @@ export const App: React.FC = () => {
             visibleTodos={visibleTodos}
             onDelete={deleteTodo}
             tempTodo={tempTodo}
-            loadingTodoId={loadingTodoId}
+            loadingTodoIds={loadingTodoIds}
             onUpdate={updateTodo}
           />
         )}
